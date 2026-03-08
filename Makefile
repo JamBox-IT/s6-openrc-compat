@@ -1,9 +1,15 @@
+PACKAGE    = s6-openrc-compat
+VERSION    = 0.1.0
+
 include config.mk
 
 # Script sources
 SOURCES = src/rc-service.in src/rc-update.in src/init-openrc-compat.sh.in src/rc-status.in src/s6-dumpenv.in
 # Generated scripts
 SCRIPTS = $(SOURCES:.in=)
+
+# Files for distribution
+DISTFILES = Makefile config.mk README.md src/*.in templates/
 
 # Sed replacement command
 SED_CMD = sed \
@@ -14,7 +20,7 @@ SED_CMD = sed \
 	-e 's|@S6_SERVICE_DIR@|$(S6_SERVICE_DIR)|g' \
 	-e 's|@S6_RUN_DIR@|$(S6_RUN_DIR)|g'
 
-.PHONY: all install uninstall clean
+.PHONY: all install uninstall clean dist
 
 all: $(SCRIPTS)
 
@@ -65,5 +71,13 @@ uninstall:
 	rm -f $(DESTDIR)/usr/bin/rc-update
 	rm -f $(DESTDIR)/usr/bin/rc-status
 
+dist: clean
+	rm -rf $(PACKAGE)-$(VERSION)
+	mkdir -p $(PACKAGE)-$(VERSION)
+	cp -r $(DISTFILES) $(PACKAGE)-$(VERSION)/
+	tar -czf $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE)-$(VERSION)
+	rm -rf $(PACKAGE)-$(VERSION)
+
 clean:
 	rm -f $(SCRIPTS)
+	rm -f $(PACKAGE)-$(VERSION).tar.gz
