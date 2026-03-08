@@ -20,9 +20,27 @@ SED_CMD = sed \
 	-e 's|@S6_SERVICE_DIR@|$(S6_SERVICE_DIR)|g' \
 	-e 's|@S6_RUN_DIR@|$(S6_RUN_DIR)|g'
 
-.PHONY: all install uninstall clean dist
+.PHONY: all install uninstall clean dist check test
 
 all: $(SCRIPTS)
+
+check: $(SCRIPTS)
+	shellcheck -s sh $(SCRIPTS)
+
+test: all
+	@echo "Running installation tests..."
+	rm -rf test_install
+	$(MAKE) install DESTDIR=$(shell pwd)/test_install
+	test -f test_install$(BINDIR)/rc-service
+	test -f test_install$(BINDIR)/rc-update
+	test -f test_install$(BINDIR)/init-openrc-compat.sh
+	test -f test_install$(BINDIR)/rc-status
+	test -f test_install$(BINDIR)/s6-dumpenv
+	@if [ "$(BINDIR)" = "/usr/local/bin" ]; then \
+		test -L test_install/usr/bin/rc-service; \
+	fi
+	rm -rf test_install
+	@echo "Tests passed successfully."
 
 src/rc-service: src/rc-service.in
 	$(SED_CMD) $< > $@
