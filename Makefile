@@ -9,7 +9,7 @@ SOURCES = src/rc-service.in src/rc-update.in src/init-openrc-compat.sh.in src/rc
 SCRIPTS = $(SOURCES:.in=)
 
 # Files for distribution
-DISTFILES = Makefile config.mk README.md src/*.in templates/
+DISTFILES = Makefile config.mk README.md src templates
 
 # Sed replacement command
 SED_CMD = sed \
