@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck make sed
+
+    - name: Build scripts
+      run: make
+
+    - name: Run linting (check)
+      run: make check
+
+    - name: Run installation tests
+      run: make test
+
+    - name: Create and verify distribution package
+      run: |
+        make dist
+        tar -tzf s6-openrc-compat-*.tar.gz | grep 'Makefile'
+        tar -tzf s6-openrc-compat-*.tar.gz | grep 'config.mk'
+        tar -tzf s6-openrc-compat-*.tar.gz | grep 'src/rc-service.in'
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: s6-openrc-compat-scripts
+        path: |
+          src/rc-service
+          src/rc-update
+          src/init-openrc-compat.sh
+          src/rc-status
+          src/s6-dumpenv
+
+    - name: Upload distribution tarball
+      uses: actions/upload-artifact@v4
+      with:
+        name: s6-openrc-compat-dist
+        path: s6-openrc-compat-*.tar.gz
